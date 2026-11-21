@@ -12,6 +12,9 @@ const repoRoot = path.resolve(
 
 const nextConfig: NextConfig = {
   output: "export",
+  // "" on regexsolver.com, "/regexsolver.com" for the github.io preview
+  // (src/lib/basePath.ts).
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || undefined,
   trailingSlash: true,
   images: {
     unoptimized: true,
@@ -19,7 +22,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: repoRoot,
   },
-  // @regexsolver/web-shared ships raw TypeScript (apps/web-shared, file: dep).
+  // @regexsolver/web-shared ships raw TypeScript (../web-shared, file: dep).
   transpilePackages: ["@regexsolver/web-shared"],
 };
 

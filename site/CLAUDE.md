@@ -19,7 +19,8 @@ The home page of the regexsolver Rust crate, kept minimal in the manner of an op
 - `src/lib/posthog.ts` + `instrumentation-client.ts` — PostHog (EU), cookieless by default, `localStorage+cookie` once the consent cookie is `accepted` (logic in web-shared). Off on local hostnames. Guard every `posthog.capture` on `analyticsEnabled`, and **never send pattern text**: error messages go through `errorKind()` (syntax errors quote the pattern), and the privacy policy promises this
 - `src/views/Privacy.tsx` — the privacy policy. Keep it in step with what the site does (hosts it is served from and downloads from, when the model downloads, analytics, storage)
 - `src/index.css` — design tokens (two inks and their overlap, see its header) and the Prism token colours
-- `public/CNAME` — the GitHub Pages custom domain. `public/.gitignore` ignores `*` (brand assets are synced from web-shared at prebuild), so every committed public file has its own `!` line
+- `src/lib/basePath.ts` — `BASE_PATH` (`NEXT_PUBLIC_BASE_PATH`): `""` on regexsolver.com, `/regexsolver.com` for the preview on regexsolver.github.io. Next prefixes its assets and `next/link` hrefs (`basePath` in `next.config.ts`); **every root-relative path written by hand goes through `asset()`** (the worker URL, favicons, the manifest link, font preloads). Paths inside `public/site.webmanifest` are relative instead. The deploy workflow's `DEPLOY_TARGET` (`preview` or `production`) sets it, with the site URL, cookie domain and analytics
+- `public/CNAME` — the custom domain (with an Actions deployment, the domain itself is set in the repo's Pages settings). `public/.gitignore` ignores `*` (brand assets are synced from web-shared at prebuild), so every committed public file has its own `!` line
 - `public/7dfa2483f6057cb87aa0cbec916d71cb.txt` — IndexNow key file; the deploy job pings IndexNow with `web-shared/scripts/indexnow.mjs` after each deploy
 
 ## The engine
@@ -42,7 +43,7 @@ The home page of the regexsolver Rust crate, kept minimal in the manner of an op
 ## Gotchas
 - Static export: no SSR/ISR/route handlers/middleware, and GitHub Pages cannot redirect or set headers. Old URLs (`/pricing/`, `/terms`, the three feature pages) now 404 onto `404.html`.
 - `app/not-found.tsx` sets `robots` and `alternates.canonical` to `null` on purpose: omitting them inherits the layout's `index, follow` and `canonical: "/"` next to Next's own `noindex`.
-- Fonts are self-hosted: `app/layout.tsx` imports `@regexsolver/web-shared/fonts/fonts.css`, and the prebuild sync-brand step copies the woff2 to `public/fonts/`. An external `@import url(...)` in `index.css` is silently dropped by Turbopack. The latin faces are preloaded with `ReactDOM.preload` (a literal `<link>` gets emitted twice).
+- Fonts are self-hosted: the prebuild sync-brand step copies the woff2 to `public/fonts/` and writes `src/app/fonts.css` (gitignored), web-shared's `fonts.css` with the base path in its root-absolute `url()`s, which `app/layout.tsx` imports. An external `@import url(...)` in `index.css` is silently dropped by Turbopack. The latin faces are preloaded with `ReactDOM.preload` (a literal `<link>` gets emitted twice).
 - `ThemeProvider` reads the theme after mount; a pre-hydration inline script in `layout.tsx` applies `.dark` first (cookie → localStorage → OS). Keep the two in sync; `<html>` has `suppressHydrationWarning`.
 - `CodeBlock` only loads Prism's Rust grammar.
 

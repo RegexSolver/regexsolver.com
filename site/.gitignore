@@ -4,3 +4,5 @@ out/
 .env.local
 # Written by scripts/build-wasm.mjs
 src/lib/engineVersion.ts
+# Written by web-shared/scripts/sync-brand.mjs
+src/app/fonts.css

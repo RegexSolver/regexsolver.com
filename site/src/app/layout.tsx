@@ -4,7 +4,10 @@ import { CookieBanner } from "@/components/CookieBanner";
 import { IS_PROD_SITE, OG_IMAGE, SITE_URL, og } from "@/lib/seo";
 import ReactDOM from "react-dom";
 import { FONT_PRELOAD } from "@regexsolver/web-shared/fonts/preload";
-import "@regexsolver/web-shared/fonts/fonts.css";
+import { asset } from "@/lib/basePath";
+// web-shared's fonts.css with the base path in its url()s, written by the
+// prebuild sync-brand step.
+import "./fonts.css";
 import "../index.css";
 
 const title = "RegexSolver - Patterns as sets of strings";
@@ -30,12 +33,12 @@ export const metadata: Metadata = {
     : { index: false, follow: false },
   icons: {
     icon: [
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: asset("/favicon-16x16.png"), sizes: "16x16", type: "image/png" },
+      { url: asset("/favicon-32x32.png"), sizes: "32x32", type: "image/png" },
     ],
-    apple: "/apple-touch-icon.png",
+    apple: asset("/apple-touch-icon.png"),
   },
-  manifest: "/site.webmanifest",
+  manifest: asset("/site.webmanifest"),
   openGraph: og({ title, description: metaDescription, url: "/" }),
   twitter: {
     card: "summary_large_image",
@@ -89,7 +92,7 @@ export default function RootLayout({
      `crossOrigin` is required even same-origin — fonts are fetched in CORS
      mode, and a preload without it is discarded and the font re-fetched. */
   for (const href of FONT_PRELOAD) {
-    ReactDOM.preload(href, {
+    ReactDOM.preload(asset(href), {
       as: "font",
       type: "font/woff2",
       crossOrigin: "anonymous",

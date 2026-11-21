@@ -7,6 +7,7 @@
    its own timeout between steps, this catches a step that runs away. The next
    call starts a fresh worker. */
 
+import { asset } from "./basePath";
 import { ENGINE_VERSION } from "./engineVersion";
 import { type Model, modelUrl } from "./models";
 
@@ -53,7 +54,7 @@ function getWorker(): Worker {
   if (worker) return worker;
   // The version keeps a browser from mixing files of two deploys
   // (scripts/build-wasm.mjs).
-  const created = new Worker(`/engine/worker.js?v=${ENGINE_VERSION}`, {
+  const created = new Worker(asset(`/engine/worker.js?v=${ENGINE_VERSION}`), {
     type: "module",
   });
   created.onmessage = ({ data }) => {

@@ -1,6 +1,6 @@
-# Builds the site (Next static export) with the live demo's engine (../wasm,
-# regexsolver compiled to WebAssembly) and publishes it to GitHub Pages, served
-# at https://regexsolver.com (site/public/CNAME). Pull requests build only.
+# Builds the site (Next static export) with the live demo's engine (wasm/,
+# regexsolver compiled to WebAssembly) and publishes it to GitHub Pages. Pull
+# requests build only.
 name: Build and deploy
 
 on:
@@ -11,6 +11,15 @@ on:
 
 permissions:
   contents: read
+
+env:
+  # Where the site is served:
+  # - preview: https://regexsolver.github.io/regexsolver.com/, under a base
+  #   path, not indexed, without analytics. For checking the site before
+  #   regexsolver.com points at GitHub Pages.
+  # - production: https://regexsolver.com, once it does and the Pages custom
+  #   domain is set.
+  DEPLOY_TARGET: preview
 
 concurrency:
   group: pages-${{ github.ref }}
@@ -55,16 +64,22 @@ jobs:
           npm run typecheck
 
       # NEXT_PUBLIC_* are inlined into the export at build time.
-      # NEXT_PUBLIC_SITE_URL is the indexing switch (src/lib/seo.ts). The
-      # PostHog token is a public client key.
+      # NEXT_PUBLIC_SITE_URL is the indexing switch (src/lib/seo.ts),
+      # NEXT_PUBLIC_BASE_PATH the path the site is served under
+      # (src/lib/basePath.ts). The PostHog token is a public client key.
       - name: Build the site
         working-directory: site
-        env:
-          NEXT_PUBLIC_SITE_URL: https://regexsolver.com
-          NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: phc_zAJHUZzqnkUw5ep7HqV63tUAhn78LVZj5rN8aqZnycqz
-          NEXT_PUBLIC_POSTHOG_HOST: https://eu.i.posthog.com
-          NEXT_PUBLIC_COOKIE_DOMAIN: .regexsolver.com
-        run: npm run build
+        run: |
+          if [ "$DEPLOY_TARGET" = production ]; then
+            export NEXT_PUBLIC_SITE_URL=https://regexsolver.com
+            export NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=phc_zAJHUZzqnkUw5ep7HqV63tUAhn78LVZj5rN8aqZnycqz
+            export NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
+            export NEXT_PUBLIC_COOKIE_DOMAIN=.regexsolver.com
+          else
+            export NEXT_PUBLIC_SITE_URL=https://regexsolver.github.io/regexsolver.com
+            export NEXT_PUBLIC_BASE_PATH=/regexsolver.com
+          fi
+          npm run build
 
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -85,8 +100,10 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - uses: actions/checkout@v4
+        if: env.DEPLOY_TARGET == 'production'
         with:
           sparse-checkout: web-shared/scripts
       - name: Ping IndexNow
+        if: env.DEPLOY_TARGET == 'production'
         continue-on-error: true
         run: node web-shared/scripts/indexnow.mjs https://regexsolver.com
