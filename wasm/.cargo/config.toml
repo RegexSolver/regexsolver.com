@@ -1,0 +1,8 @@
+[build]
+target = "wasm32-unknown-unknown"
+
+# `getrandom` reaches system randomness through the host's Web Crypto on
+# `wasm32-unknown-unknown` (`wasm_js`, see Cargo.toml). Generation and sampling
+# draw from fixed seeds; candle's dependencies only need it to build.
+[target.wasm32-unknown-unknown]
+rustflags = ['--cfg', 'getrandom_backend="wasm_js"']

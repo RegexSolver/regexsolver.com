@@ -1,0 +1,31 @@
+[package]
+name = "regexsolver-demo"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "The regexsolver.com live demo's engine: regexsolver compiled to WebAssembly"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# No `parallel`: `wasm32-unknown-unknown` has no threads. `neural-synthesis`
+# turns the automata that compute operations return into short regexes.
+regexsolver = { version = "1.3.0", default-features = false, features = ["neural-synthesis"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Pinned to the CLI that generates the bindings: the two must match exactly
+# (`wasm-bindgen-cli` in .github/workflows/deploy.yml).
+wasm-bindgen = "=0.2.130"
+# Not used directly: selects the Web Crypto backend of each `getrandom` in the
+# tree, which has none on `wasm32-unknown-unknown` otherwise (0.4 is selected
+# by `zip`, through candle).
+getrandom_02 = { package = "getrandom", version = "0.2", features = ["js"] }
+getrandom_03 = { package = "getrandom", version = "0.3", features = ["wasm_js"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"

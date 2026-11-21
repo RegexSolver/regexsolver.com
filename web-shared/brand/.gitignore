@@ -1,0 +1,4 @@
+# Build inputs for gen_logo.py / gen_og.py, fetched on demand (see README.md).
+# The generated SVG/PNG output IS committed — this folder is the source of truth.
+.venv/
+*.ttf

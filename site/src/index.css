@@ -1,0 +1,208 @@
+/* Fonts are loaded via <link> tags in app/layout.tsx — an external
+   @import url(...) here gets silently dropped by Next/Turbopack. */
+@import "tailwindcss";
+/* web-shared ships React components (footer content, cookie banner) whose
+   Tailwind classes live outside this app's sources. v4 auto-detection skips
+   node_modules, so the package must be declared as a source explicitly —
+   drop this and those components silently lose their styling. */
+@source "../node_modules/@regexsolver/web-shared/src";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* RegexSolver — design tokens
+   Two inks on paper. Ink A is pattern A, ink B is pattern B,
+   the overlap colour is the computed result. Nothing else gets a colour. */
+:root {
+    /* ---- Ground ---- */
+    --paper: #FBFAF7;
+    --ink: #141416;
+    --mute: #6B6960;
+    --rule: #DAD7CE;
+
+    /* ---- The two inks and their overlap ---- */
+    --set-a: #2A3FD4;   /* pattern A · inputs · primary action */
+    --set-b: #D13E1E;   /* pattern B · exclusions · negative results */
+    --overlap: #6E2C6B; /* COMPUTED RESULTS ONLY */
+
+    /* ---- Tints (printed ink at partial coverage) ---- */
+    --set-a-05: color-mix(in srgb, var(--set-a) 5%, var(--paper));
+    --set-a-12: color-mix(in srgb, var(--set-a) 12%, var(--paper));
+    --set-a-30: color-mix(in srgb, var(--set-a) 30%, var(--paper));
+    --set-b-05: color-mix(in srgb, var(--set-b) 5%, var(--paper));
+    --set-b-12: color-mix(in srgb, var(--set-b) 12%, var(--paper));
+    --set-b-30: color-mix(in srgb, var(--set-b) 30%, var(--paper));
+    --overlap-08: color-mix(in srgb, var(--overlap) 8%, var(--paper));
+    --overlap-20: color-mix(in srgb, var(--overlap) 20%, var(--paper));
+
+    /* ---- Type ---- */
+    --font-display: "Martian Mono", ui-monospace, monospace;
+    --font-body: "Instrument Sans", system-ui, sans-serif;
+    --font-code: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+    /* Martian Mono is wide. Condense it, always. */
+    --display-width: "wdth" 87.5;
+
+    /* ---- Scale (1.5 at display sizes, 1.25 below) ---- */
+    --t-display: clamp(2.25rem, 6.5vw, 4rem);
+    --t-h2: clamp(1.5rem, 3.2vw, 2.125rem);
+    --t-h3: 1.0625rem;
+    --t-body: 1rem;
+    --t-small: 0.875rem;
+    --t-caption: 0.6875rem;
+
+    /* ---- Everything else ---- */
+    --radius: 4px; /* one radius. circles are for states only. */
+    --measure: 62ch;
+
+    /* ---- Legacy shadcn names resolve to the tokens above ---- */
+    --background: var(--paper);
+    --foreground: var(--ink);
+    --primary: var(--set-a);
+    --primary-foreground: var(--paper);
+    --secondary: color-mix(in srgb, var(--ink) 6%, var(--paper));
+    --secondary-foreground: var(--ink);
+    --muted: color-mix(in srgb, var(--rule) 45%, var(--paper));
+    --muted-foreground: var(--mute);
+    --accent: color-mix(in srgb, var(--ink) 5%, var(--paper));
+    --accent-foreground: var(--ink);
+    --destructive: var(--set-b);
+    --destructive-foreground: var(--paper);
+    --border: var(--rule);
+    --input: var(--rule);
+    --ring: var(--set-a);
+    --card: var(--paper);
+    --card-foreground: var(--ink);
+    --popover: var(--paper);
+    --popover-foreground: var(--ink);
+}
+
+/* Dark mode: the same two inks, printed on ink-dark stock.
+   Ink values are lightened so every pair keeps WCAG AA on the dark ground;
+   all tints recompute automatically because they mix against --paper. */
+.dark {
+    --paper: #161619;
+    --ink: #EDECE6;
+    --mute: #98958C;
+    --rule: #2D2C32;
+
+    --set-a: #93A0F4;
+    --set-b: #EC8168;
+    --overlap: #C98FC5;
+
+    /* The one token that is not a pure recompute: the docs' popover lifts off
+       the page in dark mode only (zudoku.config.tsx theme.dark.popover). */
+    --popover: color-mix(in srgb, var(--ink) 4%, var(--paper));
+}
+
+/* Tailwind v4 mapping — existing utility names resolve to the tokens. */
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    /* Semantic ink utilities: bg-set-a/12, text-overlap, border-rule, … */
+    --color-set-a: var(--set-a);
+    --color-set-b: var(--set-b);
+    --color-overlap: var(--overlap);
+    --color-paper: var(--paper);
+    --color-ink: var(--ink);
+    --color-mute: var(--mute);
+    --color-rule: var(--rule);
+
+    --font-sans: var(--font-body);
+    --font-mono: var(--font-code);
+    --font-display: var(--font-display);
+
+    /* One radius. */
+    --radius-xs: var(--radius);
+    --radius-sm: var(--radius);
+    --radius-md: var(--radius);
+    --radius-lg: var(--radius);
+    --radius-xl: var(--radius);
+    --radius-2xl: var(--radius);
+    --radius-3xl: var(--radius);
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground transition-colors duration-300;
+        font-family: var(--font-body);
+        overflow-x: hidden;
+    }
+    :focus-visible {
+        outline: 2px solid var(--set-a);
+        outline-offset: 2px;
+        border-radius: 2px;
+    }
+}
+
+/* Display type never ships without its width axis and negative tracking. */
+.display {
+    font-family: var(--font-display);
+    font-variation-settings: var(--display-width);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.04;
+    text-wrap: balance;
+}
+
+/* Math notation: ∩ ∪ ∖ ∁ ≡ ⊆ ∞ — set these explicitly or they fall back
+   to a system font and stop matching the surrounding text. */
+.notation {
+    font-family: var(--font-code);
+    font-feature-settings: "ss01";
+}
+
+/* Semantic helpers — use these instead of reaching for a colour directly. */
+.is-input-a {
+    color: var(--set-a);
+}
+.is-input-b {
+    color: var(--set-b);
+}
+.is-computed {
+    color: var(--overlap);
+}
+
+/* Entrance animation for page heroes. Defined once here; Header used to
+   inject it inline. The reduced-motion block below flattens it to instant. */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.animate-fade-in {
+    animation: fade-in 0.8s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}

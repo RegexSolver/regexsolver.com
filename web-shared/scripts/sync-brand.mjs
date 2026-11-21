@@ -1,0 +1,71 @@
+#!/usr/bin/env node
+/* Generates each frontend's public/ brand assets from the single source of
+   truth, apps/web-shared/brand/ — plus the self-hosted webfonts from
+   apps/web-shared/fonts/. Wired as the `predev` + `prebuild` script of all
+   three apps; the generated copies are gitignored (see each app's
+   public/.gitignore) — brand/ and fonts/ are the only committed copies. Only
+   site.webmanifest is a committed, app-specific public file and is
+   intentionally not touched. */
+
+import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const brand = join(here, "..", "brand");
+const fonts = join(here, "..", "fonts");
+const apps = join(brand, "..", "..");
+
+// dest name in public/ ← src path under brand/
+const FAVICONS = {
+  "favicons/fav-16.png": "favicon-16x16.png",
+  "favicons/fav-32.png": "favicon-32x32.png",
+  "favicons/fav-192.png": "android-chrome-192x192.png",
+  "favicons/fav-512.png": "android-chrome-512x512.png",
+  "favicons/fav-750.png": "favicon.png",
+  "favicons/fav-apple-180.png": "apple-touch-icon.png",
+  "favicons/favicon.ico": "favicon.ico",
+};
+const LOGO_SVG = { "logo-light.svg": "logo-light.svg", "logo-dark.svg": "logo-dark.svg" };
+const LOGO_PNG = { "logo-light.png": "logo-light.png", "logo-dark.png": "logo-dark.png" };
+
+// Each app ships one social share card, always at /og-image.png, so the og:image
+// URL in its metadata is a constant. The variants differ only in the eyebrow +
+// domain line (brand/gen_og.py).
+const OG = (variant) => ({ [`og/og-${variant}.png`]: "og-image.png" });
+
+// Every brand file the site ships in public/. It renders the lockup inline from
+// ./brand and additionally ships the raster logos.
+const APP_ASSETS = {
+  site: { ...FAVICONS, ...LOGO_SVG, ...LOGO_PNG, ...OG("default") },
+};
+
+// predev/prebuild run with cwd = the building app's dir, so sync only that app.
+// Fall back to all apps when run from elsewhere.
+const cwdApp = basename(process.cwd());
+const TARGETS = cwdApp in APP_ASSETS ? [cwdApp] : Object.keys(APP_ASSETS);
+
+let copied = 0;
+for (const app of TARGETS) {
+  const pub = join(apps, app, "public");
+  if (!existsSync(pub)) {
+    console.error(`sync-brand: missing ${pub}`);
+    process.exit(1);
+  }
+  for (const [src, dest] of Object.entries(APP_ASSETS[app])) {
+    copyFileSync(join(brand, src), join(pub, dest));
+    copied++;
+  }
+
+  /* The woff2 only: every app imports fonts.css through the package, so its
+     rules are bundled into the app stylesheet rather than fetched. Wiped first
+     because the hashed names change whenever fonts/ is regenerated. */
+  const dest = join(pub, "fonts");
+  rmSync(dest, { recursive: true, force: true });
+  mkdirSync(dest, { recursive: true });
+  for (const file of readdirSync(fonts).filter((f) => f.endsWith(".woff2"))) {
+    copyFileSync(join(fonts, file), join(dest, file));
+    copied++;
+  }
+}
+console.log(`sync-brand: ${copied} files synced to ${TARGETS.length} apps`);

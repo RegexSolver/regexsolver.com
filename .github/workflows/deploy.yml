@@ -1,0 +1,92 @@
+# Builds the site (Next static export) with the live demo's engine (../wasm,
+# regexsolver compiled to WebAssembly) and publishes it to GitHub Pages, served
+# at https://regexsolver.com (site/public/CNAME). Pull requests build only.
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: wasm
+      # Must match the `wasm-bindgen` version pinned in wasm/Cargo.toml.
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-bindgen@0.2.130
+      - name: Install wasm-opt
+        run: sudo apt-get update && sudo apt-get install -y binaryen
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Install dependencies
+        working-directory: site
+        run: npm ci
+
+      - name: Build the engine
+        working-directory: site
+        run: npm run build:wasm
+
+      - name: Check
+        working-directory: site
+        run: |
+          npm run lint
+          npm run typecheck
+
+      # NEXT_PUBLIC_* are inlined into the export at build time.
+      # NEXT_PUBLIC_SITE_URL is the indexing switch (src/lib/seo.ts). The
+      # PostHog token is a public client key.
+      - name: Build the site
+        working-directory: site
+        env:
+          NEXT_PUBLIC_SITE_URL: https://regexsolver.com
+          NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: phc_zAJHUZzqnkUw5ep7HqV63tUAhn78LVZj5rN8aqZnycqz
+          NEXT_PUBLIC_POSTHOG_HOST: https://eu.i.posthog.com
+          NEXT_PUBLIC_COOKIE_DOMAIN: .regexsolver.com
+        run: npm run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/out
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: web-shared/scripts
+      - name: Ping IndexNow
+        continue-on-error: true
+        run: node web-shared/scripts/indexnow.mjs https://regexsolver.com
