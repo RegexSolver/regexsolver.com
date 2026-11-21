@@ -44,9 +44,9 @@ const SECTIONS: Section[] = [
           The data controller is Alexandre van Beurden, a sole proprietor
           (<em>raison individuelle</em> / <em>Einzelfirma</em>) established in
           Switzerland. For any question about this policy or your data,
-          contact the controller through the{" "}
-          <External to="https://github.com/RegexSolver">
-            RegexSolver organization on GitHub
+          contact him on GitHub:{" "}
+          <External to="https://github.com/alexvbrdn">
+            github.com/alexvbrdn
           </External>
           .
         </p>
