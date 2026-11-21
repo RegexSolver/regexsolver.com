@@ -1,8 +1,13 @@
 # web-shared — cross-app frontend logic (`@regexsolver/web-shared`)
 
-Tiny raw-TypeScript package consumed by all three frontends (website, console, docs)
-as a `file:../web-shared` dependency (npm symlinks it; every consumer uses
-`moduleResolution: bundler`, so the `.ts` sources are bundled directly — no build step).
+Tiny raw-TypeScript package consumed by the site (`../site`) as a
+`file:../web-shared` dependency (npm symlinks it; `moduleResolution: bundler`, so
+the `.ts` sources are bundled directly — no build step).
+
+It was written for three frontends (website, console, docs) in the m-lab
+monorepo; the console and docs have been retired. Mentions of them below are
+history, and the cross-app parity they describe no longer constrains anything.
+`site-links.ts` now only knows the website and external links.
 
 ## Modules (exports map in package.json)
 - `./consent` — `cookie-consent` cookie (accepted/declined), shared across subdomains

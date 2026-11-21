@@ -5,8 +5,8 @@ export const THEME_COOKIE_KEY = "theme";
 
 /**
  * Reads the cross-subdomain dark/light choice, or null if none was made yet.
- * "system" comes from apps whose switcher offers it (console, docs); apps
- * without it resolve via prefers-color-scheme.
+ * "system" (set by a switcher that offers it; the site's toggles between light
+ * and dark) resolves via prefers-color-scheme.
  */
 export const getSharedTheme = (): SharedTheme | null => {
   const value = readCookie(THEME_COOKIE_KEY);

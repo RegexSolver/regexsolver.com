@@ -68,7 +68,7 @@ export const DotGraph = ({ dot }: { dot: string }) => {
     };
   }, [dot]);
 
-  /* Two flex items, not one wrapper: the readout in LiveDemo is a wrapping flex
+  /* Two flex items, not one wrapper: the readout in Demo is a wrapping flex
      row, so the status/toggle sits on the AUTOMATON label row while the graph
      (basis-full) wraps onto its own line underneath. */
   return (

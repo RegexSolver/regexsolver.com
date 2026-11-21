@@ -1,9 +1,9 @@
 import posthog from "posthog-js";
 import { initAnalytics } from "@regexsolver/web-shared/analytics";
 
-// Shared setup across website/console/docs (see apps/web-shared/src/analytics.ts):
-// cookieless anonymous capture by default, upgraded to persistent cookies when the
-// cross-subdomain consent cookie says "accepted". Run for its side effect from
+// Setup in web-shared/src/analytics.ts: cookieless anonymous capture by
+// default, upgraded to persistent cookies when the consent cookie says
+// "accepted". Run for its side effect from
 // instrumentation-client.ts so PostHog is ready before first render.
 
 /** False when NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN is unset or on a local hostname

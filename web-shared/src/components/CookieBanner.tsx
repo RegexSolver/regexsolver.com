@@ -1,13 +1,9 @@
 "use client";
 
-/* The cookie-consent banner rendered by all three apps. Behavior comes from
-   ../cookie-banner (createCookieBanner); this is the one copy of the markup
-   that used to be duplicated per app.
-
-   Per this package's rules the env var stays in the app: each app passes its
-   own cookieDomain (NEXT_PUBLIC_ / VITE_ / ZUDOKU_PUBLIC_COOKIE_DOMAIN) and its
-   own privacy-policy anchor (the docs link relatively, the website through its
-   Link wrapper, the console with target="_blank"). */
+/* The cookie-consent banner. Behavior comes from ../cookie-banner
+   (createCookieBanner). Per this package's rules the env var stays in the
+   site: it passes its cookieDomain (NEXT_PUBLIC_COOKIE_DOMAIN) and its
+   privacy-policy link. */
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { type Consent, createCookieBanner } from "../cookie-banner";
@@ -20,9 +16,9 @@ export const CookieBanner = ({
   privacyLink: ReactNode;
 }) => {
   const banner = useMemo(() => createCookieBanner(cookieDomain), [cookieDomain]);
-  // Visibility is seeded in an effect, never during render: the website (Next)
-  // and docs (Zudoku) prerender this tree, and reading the consent cookie at
-  // render time would make the server and client HTML disagree.
+  // Visibility is seeded in an effect, never during render: the static export
+  // prerenders this tree, and reading the consent cookie at render time would
+  // make the server and client HTML disagree.
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {

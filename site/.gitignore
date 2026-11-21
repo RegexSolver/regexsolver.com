@@ -2,3 +2,5 @@
 node_modules/
 out/
 .env.local
+# Written by scripts/build-wasm.mjs
+src/lib/engineVersion.ts

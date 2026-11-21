@@ -1,10 +1,9 @@
 import { useSyncExternalStore } from "react";
 
-/* The SDK language picked in any CustomCodeTabs, shared by every code block on
+/* The language picked in any CustomCodeTabs, shared by every code block on
    the page and remembered in localStorage so the next page opens on it too.
-   Keyed on the tab's Prism `language` ("javascript" | "java" | "python"), which
-   every caller agrees on, rather than its `value` (the demo says "javascript"
-   where the other pages say "js").
+   Keyed on the tab's Prism `language`. Every block is Rust-only for now, so it
+   only matters again if a second language comes back.
 
    The server snapshot is null, so the static export prerenders each block on
    its first tab and hydration swaps in the stored choice without a mismatch. */

@@ -2,10 +2,10 @@
 /* IndexNow ping: submits a prod site's sitemap URLs to the IndexNow API, so
    participating engines (Bing, Yandex, Seznam, Naver — NOT Google, which does
    not implement the protocol) recrawl changed pages instead of waiting for
-   their own schedule. Run as the last step of the rs-website / rs-docs deploy
-   jobs on master only; see .github/workflows/rs-{website,docs}_test-and-deploy.yml.
+   their own schedule. Run as the last step of the deploy job on main; see
+   .github/workflows/deploy.yml.
 
-     node apps/web-shared/scripts/indexnow.mjs https://regexsolver.com [--dry-run]
+     node web-shared/scripts/indexnow.mjs https://regexsolver.com [--dry-run]
 
    It reads the LIVE sitemap.xml rather than a build directory, so it works from
    a bare checkout in the deploy job and only submits URLs the site is really
@@ -14,18 +14,15 @@
    instead of a silent 403 from the API. */
 
 // Single source of truth for the key. Rotating it means editing this constant
-// AND renaming both apps' committed public/<key>.txt (contents = the key):
-//   apps/com.regexsolver/public/<key>.txt        -> https://regexsolver.com/<key>.txt
-//   apps/com.regexsolver.docs/public/<key>.txt   -> https://docs.regexsolver.com/<key>.txt
-// Both public/.gitignore files ignore `*`, so a new key file also needs its own
-// `!<key>.txt` unignore line or it never reaches the image.
+// AND renaming the committed site/public/<key>.txt (contents = the key), served
+// at https://regexsolver.com/<key>.txt. site/public/.gitignore ignores `*`, so
+// a new key file also needs its own `!<key>.txt` unignore line.
 export const INDEXNOW_KEY = "7dfa2483f6057cb87aa0cbec916d71cb";
 
-// Only the prod origins may be pinged. Dev builds with `noindex, nofollow` and
-// an empty sitemap (NEXT_PUBLIC_SITE_URL / ZUDOKU_PUBLIC_DOCS_URL are the
-// indexing switch), so submitting one would at best be a no-op and at worst
-// push dev URLs at an engine.
-const PROD_ORIGINS = ["https://regexsolver.com", "https://docs.regexsolver.com"];
+// Only the prod origin may be pinged. Other builds get `noindex, nofollow` and
+// an empty sitemap (NEXT_PUBLIC_SITE_URL is the indexing switch), so submitting
+// one would at best be a no-op and at worst push their URLs at an engine.
+const PROD_ORIGINS = ["https://regexsolver.com"];
 
 const ENDPOINT = "https://api.indexnow.org/indexnow";
 const TIMEOUT_MS = 15_000;

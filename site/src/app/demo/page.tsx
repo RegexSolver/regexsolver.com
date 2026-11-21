@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/JsonLd";
 import { breadcrumb, OG_IMAGE, og } from "@/lib/seo";
-import { LiveDemo } from "@/views/LiveDemo";
+import { DemoPage } from "@/views/DemoPage";
 
 // Breadcrumb / sitelink name. The tab + SERP title is metaTitle: with the
 // " | RegexSolver" template it should land at 50-60 chars.
@@ -27,7 +27,7 @@ export default function Page() {
           { name: title, path: "/demo/" },
         ])}
       />
-      <LiveDemo />
+      <DemoPage />
     </>
   );
 }

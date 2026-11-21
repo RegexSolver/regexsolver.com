@@ -4,9 +4,8 @@ import { type Consent, getStoredConsent } from "./consent";
  * Minimal structural slice of the PostHog client we use — posthog-js' default
  * export satisfies it. Declared here instead of importing posthog-js so this
  * package has ZERO runtime imports: it is consumed as a symlinked raw-TS file:
- * dependency, and a bare import would fail Node resolution (no node_modules
- * above apps/web-shared) during Zudoku's build-time prerender. Each app passes
- * its own posthog-js instance in.
+ * dependency, where a bare import can fail Node resolution. The site passes
+ * its posthog-js instance in.
  */
 export interface AnalyticsClient {
   init(token: string, config: object): unknown;
@@ -18,12 +17,11 @@ export interface AnalyticsClient {
 export interface AnalyticsOptions {
   /** PostHog project token (public client key). Unset → analytics disabled. */
   token?: string;
-  /** Ingestion host: the same-origin `/ingest` proxy in prod, the EU cloud in dev. */
+  /** Ingestion host: PostHog's EU cloud. */
   apiHost?: string;
   /**
-   * Which frontend this is (`"website"` | `"console"` | `"docs"`). Registered as
-   * the `app` super property so it rides on EVERY event — autocapture, pageviews
-   * and custom captures alike — letting you filter/break-down by origin in PostHog.
+   * Which frontend this is (`"website"`). Registered as the `app` super property
+   * so it rides on every event, letting you filter by origin in PostHog.
    */
   source?: string;
   debug?: boolean;
@@ -34,7 +32,7 @@ let client: AnalyticsClient | null = null;
 /**
  * Derives the deployment environment from the hostname so every event can be
  * split by dev vs prod in the shared PostHog project:
- *   regexsolver.com (+ console./docs.)       → "prod"
+ *   regexsolver.com                          → "prod"
  *   dev.regexsolver.com (+ its subdomains)   → "dev"
  *   localhost / 127.0.0.1 / *.local          → "local"
  */
@@ -46,12 +44,12 @@ const detectEnvironment = (hostname: string): string => {
   ) {
     return "local";
   }
-  // A "dev" label anywhere in the host (dev.regexsolver.com, dev.console…) → dev.
+  // A "dev" label anywhere in the host (dev.regexsolver.com) → dev.
   return hostname.split(".").includes("dev") ? "dev" : "prod";
 };
 
 /**
- * Initializes PostHog identically across the website, console and docs.
+ * Initializes PostHog.
  * Returns whether analytics is active (false outside the browser — e.g. during
  * SSR/prerendering — without a token, or on a local hostname).
  */
@@ -84,9 +82,9 @@ export const initAnalytics = (
     cross_subdomain_cookie: true,
   });
 
-  // Tag every event with its originating app + deployment environment so the shared
-  // PostHog project can be filtered/broken down by source (website vs console vs docs)
-  // and by env (dev vs prod, derived from the hostname).
+  // Tag every event with its originating app and deployment environment (dev
+  // vs prod, derived from the hostname), so the PostHog project can be
+  // filtered by both.
   const superProps: Record<string, string> = { environment };
   if (source) superProps.app = source;
   posthog.register(superProps);

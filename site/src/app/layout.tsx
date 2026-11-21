@@ -7,14 +7,14 @@ import { FONT_PRELOAD } from "@regexsolver/web-shared/fonts/preload";
 import "@regexsolver/web-shared/fonts/fonts.css";
 import "../index.css";
 
-const title = "RegexSolver - Compare, combine, and generate regex patterns";
+const title = "RegexSolver - Patterns as sets of strings";
 // Used for <meta name="description"> AND og:/twitter:description — social
 // previews truncate around 125 chars, so keep it under that.
 const metaDescription =
-  "An API for regex patterns themselves: test overlap and equivalence, intersect, subtract, count matches, generate strings.";
+  "A Rust library that treats regex patterns as sets of strings: intersect, subtract, compare, complement and enumerate them.";
 // JSON-LD only: structured data has no preview-truncation limit.
 const jsonLdDescription =
-  "RegexSolver answers questions about regex patterns themselves: whether two patterns overlap or are equivalent, how many strings they match, and which strings those are - via intersection, difference, cardinality, and deterministic string generation.";
+  "RegexSolver is a Rust library that treats patterns as the sets of strings they match, so you can intersect, subtract, compare, complement and enumerate them, and get the result back as a regex.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -72,13 +72,9 @@ const jsonLd = {
       url: SITE_URL,
       description: jsonLdDescription,
       publisher: { "@id": `${SITE_URL}/#organization` },
-      offers: {
-        "@type": "Offer",
-        name: "Free",
-        price: "0",
-        priceCurrency: "EUR",
-        url: `${SITE_URL}/pricing/`,
-      },
+      license: "https://opensource.org/licenses/MIT",
+      codeRepository: "https://github.com/RegexSolver/regexsolver",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
     },
   ],
 };

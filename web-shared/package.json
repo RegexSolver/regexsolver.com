@@ -2,7 +2,7 @@
   "name": "@regexsolver/web-shared",
   "version": "0.0.0",
   "private": true,
-  "description": "Cross-app frontend logic and components shared by the website, console and docs: consent + theme cookies (cross-subdomain), PostHog init, cookie banner, footer content, logo. Ships raw TypeScript \u2014 consumers bundle it (all use moduleResolution: bundler).",
+  "description": "Frontend logic and components for the site: consent + theme cookies, PostHog init, cookie banner, site links, logo. Ships raw TypeScript — the site bundles it (moduleResolution: bundler).",
   "type": "module",
   "exports": {
     "./analytics": "./src/analytics.ts",
@@ -14,8 +14,7 @@
     "./fonts/preload": "./fonts/preload.ts",
     "./fonts/fonts.css": "./fonts/fonts.css",
     "./components/Logo": "./src/components/Logo.tsx",
-    "./components/CookieBanner": "./src/components/CookieBanner.tsx",
-    "./components/FooterContent": "./src/components/FooterContent.tsx"
+    "./components/CookieBanner": "./src/components/CookieBanner.tsx"
   },
   "peerDependencies": {
     "react": ">=19.0.0"

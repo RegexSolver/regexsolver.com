@@ -10,7 +10,7 @@ browser, compiled to WebAssembly: nothing is sent to a server.
   fetched from the Hugging Face Hub by the browser).
 - `site/`: the Next.js static export. `public/engine/worker.js` runs the engine
   in a Web Worker; `src/lib/engine.ts` is the page side.
-- `web-shared/`: brand assets, fonts, consent, analytics and footer content.
+- `web-shared/`: brand assets, fonts, consent, analytics and site links.
 
 ## Develop
 

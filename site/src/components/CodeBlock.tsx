@@ -3,11 +3,7 @@
 import { useEffect, useRef } from "react";
 import Prism from "prismjs";
 
-import "prismjs/components/prism-java";
-import "prismjs/components/prism-python";
-import "prismjs/components/prism-javascript";
-import "prismjs/components/prism-typescript";
-import "prismjs/components/prism-regex";
+import "prismjs/components/prism-rust";
 
 interface CodeBlockProps {
   code: string;
@@ -33,7 +29,7 @@ export const CodeBlock = ({ code, language }: CodeBlockProps) => {
     >
       <code
         ref={codeRef}
-        className={`language-${language === "js" ? "javascript" : language}`}
+        className={`language-${language}`}
       >
         {code}
       </code>

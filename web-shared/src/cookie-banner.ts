@@ -4,10 +4,9 @@ import { type Consent, getStoredConsent, setStoredConsent } from "./consent";
 export type { Consent };
 
 /**
- * Framework-free cookie-banner behavior — the markup and a tiny useState wrapper
- * stay app-specific. (No React here on purpose: this package is a symlinked
- * raw-TS file: dependency with ZERO runtime imports, because bare imports fail
- * Node resolution during Zudoku's build-time prerender.)
+ * Framework-free cookie-banner behavior; the markup is in
+ * components/CookieBanner.tsx. (No React here on purpose: this package is a
+ * symlinked raw-TS file: dependency with zero runtime imports.)
  */
 export const createCookieBanner = (cookieDomain?: string) => ({
   /** True when the user hasn't decided yet — check once on mount. */

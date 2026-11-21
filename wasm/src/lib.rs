@@ -1,11 +1,11 @@
 //! The live demo's engine: runs one operation of the demo form on
 //! [`regexsolver`] and returns the result the page renders, as JSON.
 //!
-//! The page runs it in a Web Worker (`site/src/lib/engine.worker.ts`), so a
+//! The page runs it in a Web Worker (`site/public/engine/worker.js`), so a
 //! long operation never blocks the UI, and a worker that does not answer in
 //! time can be terminated.
 
-use std::{cell::RefCell, ops::Bound, time::Duration};
+use std::{cell::RefCell, collections::HashMap, ops::Bound, time::Duration};
 
 use regexsolver::{
     Term,
@@ -41,23 +41,20 @@ fn clock() -> Duration {
 }
 
 thread_local! {
-    static SYNTHESIZER: RefCell<Option<NeuralSynthesizer>> = const { RefCell::new(None) };
+    /// The neural synthesis models loaded so far, by name.
+    static SYNTHESIZERS: RefCell<HashMap<String, NeuralSynthesizer>> =
+        RefCell::new(HashMap::new());
 }
 
-/// Loads the neural synthesis model from its `config.json` and
-/// `model.safetensors`. Until it is loaded, compute operations fall back to
-/// state elimination.
+/// Loads a neural synthesis model (a learned model that proposes simpler
+/// patterns for an automaton) from its `config.json` and `model.safetensors`,
+/// under `name`, the name a request's `format` gives.
 #[wasm_bindgen(js_name = loadModel)]
-pub fn load_model(config: &[u8], weights: Vec<u8>) -> Result<(), JsError> {
+pub fn load_model(name: &str, config: &[u8], weights: Vec<u8>) -> Result<(), JsError> {
     let synthesizer = NeuralSynthesizer::from_bytes(config, weights, Device::Cpu)
         .map_err(|err| JsError::new(&err.to_string()))?;
-    SYNTHESIZER.with(|cell| *cell.borrow_mut() = Some(synthesizer));
+    SYNTHESIZERS.with(|cell| cell.borrow_mut().insert(name.to_string(), synthesizer));
     Ok(())
-}
-
-#[wasm_bindgen(js_name = isModelLoaded)]
-pub fn is_model_loaded() -> bool {
-    SYNTHESIZER.with(|cell| cell.borrow().is_some())
 }
 
 /// The demo form's state, as the page sends it.
@@ -73,6 +70,19 @@ struct Request {
     offset: Option<usize>,
     path_order: Option<String>,
     character_order: Option<String>,
+    /// How an operation that returns a term returns it: `"automaton"` (its
+    /// graph), `"state_elimination"` (the default) or the name of a loaded
+    /// model.
+    format: Option<String>,
+}
+
+/// An error, with the message the page shows.
+struct Failure(String);
+
+impl From<EngineError> for Failure {
+    fn from(err: EngineError) -> Self {
+        Failure(describe(&err))
+    }
 }
 
 /// What the page renders: `type` picks the presentation.
@@ -96,11 +106,11 @@ pub fn run(request: &str) -> Result<String, JsError> {
         .build();
     let response = profile
         .run(|| execute(&request))
-        .map_err(|err| JsError::new(&describe(&err)))?;
+        .map_err(|Failure(message)| JsError::new(&message))?;
     serde_json::to_string(&response).map_err(|err| JsError::new(&err.to_string()))
 }
 
-fn execute(request: &Request) -> Result<Response, EngineError> {
+fn execute(request: &Request) -> Result<Response, Failure> {
     let a = Term::from_pattern(&request.regex1)?;
     let b = || Term::from_pattern(request.regex2.as_deref().unwrap_or_default());
     Ok(match request.operation.as_str() {
@@ -124,15 +134,16 @@ fn execute(request: &Request) -> Result<Response, EngineError> {
         "subset" => response("boolean", a.subset(&b()?)?.to_string()),
         // Raw Graphviz source; the page lays it out.
         "dot" => response("dot", a.to_automaton()?.to_dot()),
-        "concat" => regex(a.concat(&[b()?])?)?,
-        "union" => regex(a.union(&[b()?])?)?,
-        "intersection" => regex(a.intersection(&[b()?])?)?,
-        "difference" => regex(a.difference(&b()?)?)?,
-        "complement" => regex(a.complement()?)?,
+        "concat" => term(a.concat([&b()?])?, request)?,
+        "union" => term(a.union([&b()?])?, request)?,
+        "intersection" => term(a.intersection([&b()?])?, request)?,
+        "difference" => term(a.difference(&b()?)?, request)?,
+        "symmetric_difference" => term(a.symmetric_difference([&b()?])?, request)?,
+        "complement" => term(a.complement()?, request)?,
         "repeat" => {
             let min = Bound::Included(request.min.unwrap_or(0));
             let max = request.max.map_or(Bound::Unbounded, Bound::Included);
-            regex(a.repeat((min, max))?)?
+            term(a.repeat((min, max))?, request)?
         }
         "strings" => {
             let options = GenerationOptions::new()
@@ -156,11 +167,7 @@ fn execute(request: &Request) -> Result<Response, EngineError> {
             }
         }
         // The page only sends the operations above.
-        other => {
-            return Err(EngineError::UnsupportedRegexFeature(format!(
-                "unknown operation `{other}`"
-            )));
-        }
+        other => return Err(Failure(format!("Unknown operation `{other}`."))),
     })
 }
 
@@ -171,14 +178,19 @@ fn response(kind: &'static str, value: String) -> Response {
     }
 }
 
-/// The term as a regex: the model's, once it is loaded, else state
-/// elimination's.
-fn regex(term: Term) -> Result<Response, EngineError> {
-    let pattern = SYNTHESIZER.with(|cell| match cell.borrow().as_ref() {
-        Some(synthesizer) => term.to_pattern_with(synthesizer),
-        None => term.to_pattern(),
-    })?;
-    Ok(response("regex", pattern))
+/// A term an operation returns, in the request's `format`: the graph of its
+/// minimal automaton, or a pattern by state elimination or by a model (which
+/// proposes simpler patterns, each checked against the automaton).
+fn term(term: Term, request: &Request) -> Result<Response, Failure> {
+    Ok(match request.format.as_deref() {
+        Some("automaton") => response("dot", term.minimize()?.to_automaton()?.to_dot()),
+        None | Some("state_elimination") => response("regex", term.to_pattern()?),
+        Some(model) => SYNTHESIZERS.with(|cell| match cell.borrow().get(model) {
+            Some(synthesizer) => Ok(response("regex", term.to_pattern_with(synthesizer)?)),
+            // The worker loads the model before it sends the request.
+            None => Err(Failure(format!("The model {model} is not loaded."))),
+        })?,
+    })
 }
 
 fn describe(err: &EngineError) -> String {
