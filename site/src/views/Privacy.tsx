@@ -6,17 +6,6 @@ import { Link } from "../components/ui/Link";
    with what the site actually does: the hosts it is served from and downloads
    from, and what lib/posthog.ts and the cookie banner do. */
 
-const CONTACT = "legal@regexsolver.com";
-
-const Mail = () => (
-  <Link
-    to={`mailto:${CONTACT}`}
-    className="text-set-a underline underline-offset-2 hover:opacity-80"
-  >
-    {CONTACT}
-  </Link>
-);
-
 const External = ({ to, children }: { to: string; children: string }) => (
   <Link
     to={to}
@@ -55,7 +44,11 @@ const SECTIONS: Section[] = [
           The data controller is Alexandre van Beurden, a sole proprietor
           (<em>raison individuelle</em> / <em>Einzelfirma</em>) established in
           Switzerland. For any question about this policy or your data,
-          contact <Mail />.
+          contact the controller through the{" "}
+          <External to="https://github.com/RegexSolver">
+            RegexSolver organization on GitHub
+          </External>
+          .
         </p>
       </>
     ),
@@ -183,8 +176,8 @@ const SECTIONS: Section[] = [
           Subject to the GDPR and the FADP, you have the right to access,
           rectify and erase your personal data, to restrict or object to its
           processing, to data portability, and to withdraw consent at any time
-          without affecting earlier processing. To exercise them, contact{" "}
-          <Mail />.
+          without affecting earlier processing. To exercise them, contact the
+          controller as described in section 2.
         </p>
         <p>
           You may lodge a complaint with a supervisory authority: in
