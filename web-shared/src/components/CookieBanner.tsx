@@ -41,9 +41,8 @@ export const CookieBanner = ({
     >
       <div className="pointer-events-auto mx-auto max-w-3xl rounded-[4px] border border-border bg-card text-card-foreground p-5 sm:p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground leading-relaxed">
-          We use essential cookies to make RegexSolver work. With your consent
-          we may also use cookies to understand how the site is used. See our{" "}
-          {privacyLink}.
+          With your consent, we use cookies to understand how the site is used.
+          See our {privacyLink}.
         </p>
         <div className="flex gap-3 shrink-0">
           <button

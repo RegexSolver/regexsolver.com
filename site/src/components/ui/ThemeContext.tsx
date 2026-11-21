@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { getSharedTheme, setSharedTheme } from "../../lib/theme";
 
 type Theme = "dark" | "light";
 
@@ -21,14 +20,9 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
-    // A choice made on any subdomain (cross-subdomain cookie) wins over this
-    // site's own saved preference; "system" resolves via prefers-color-scheme.
-    const shared = getSharedTheme();
-    const saved =
-      shared === "system"
-        ? null
-        : (shared ?? (localStorage.getItem("theme") as Theme | null));
-    if (saved) {
+    // The visitor's saved choice, else the OS preference.
+    const saved = localStorage.getItem("theme");
+    if (saved === "light" || saved === "dark") {
       setTheme(saved);
     } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
       setTheme("dark");
@@ -43,15 +37,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem("theme", theme);
   }, [theme, mounted]);
 
-  // Only explicit user changes propagate to the shared cookie — the load-time
-  // resolution above must not overwrite e.g. a "system" choice made elsewhere.
-  const changeTheme = React.useCallback((next: Theme) => {
-    setTheme(next);
-    setSharedTheme(next);
-  }, []);
-
   return (
-    <ThemeContext.Provider value={{ theme, setTheme: changeTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

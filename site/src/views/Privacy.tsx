@@ -111,8 +111,8 @@ const SECTIONS: Section[] = [
     body: (
       <>
         <p>
-          A cookie stores your cookie-consent choice and your light or dark
-          theme. Your browser&rsquo;s local storage keeps the theme and the
+          Once you answer the cookie banner, a cookie stores your choice. Your
+          browser&rsquo;s local storage keeps your light or dark theme and the
           code tab you last picked. The models you download in the demo are
           kept in your browser&rsquo;s cache, so each is downloaded once. These
           are strictly necessary or functional, stay on your device, and can be
