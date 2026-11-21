@@ -19,7 +19,7 @@ env:
   #   regexsolver.com points at GitHub Pages.
   # - production: https://regexsolver.com, once it does and the Pages custom
   #   domain is set.
-  DEPLOY_TARGET: preview
+  DEPLOY_TARGET: production
 
 concurrency:
   group: pages-${{ github.ref }}

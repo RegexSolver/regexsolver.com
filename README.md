@@ -29,7 +29,7 @@ npm run dev
 ## Deploy
 
 Every push to `main` builds and publishes to GitHub Pages
-(`.github/workflows/deploy.yml`). Its `DEPLOY_TARGET` is `preview`
-(https://regexsolver.github.io/regexsolver.com/) until regexsolver.com points
-at GitHub Pages; then set the custom domain in the repo's Pages settings and
-`DEPLOY_TARGET` to `production`.
+(`.github/workflows/deploy.yml`) at https://regexsolver.com. Its
+`DEPLOY_TARGET` can be set back to `preview` to build for
+https://regexsolver.github.io/regexsolver.com/ instead, for a site without the
+custom domain.
