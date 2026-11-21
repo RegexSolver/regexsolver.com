@@ -44,7 +44,7 @@ const SECTIONS: Section[] = [
           The data controller is Alexandre van Beurden, a sole proprietor
           (<em>raison individuelle</em> / <em>Einzelfirma</em>) established in
           Switzerland. For any question about this policy or your data,
-          contact him on GitHub:{" "}
+          contact the controller on GitHub:{" "}
           <External to="https://github.com/alexvbrdn">
             github.com/alexvbrdn
           </External>
