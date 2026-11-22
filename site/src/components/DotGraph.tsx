@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import posthog, { analyticsEnabled } from "../lib/posthog";
 
 /* Graphviz runs in the browser (WASM, ~1.2 MB), so it is pulled in only once a
    graph is actually rendered — a cached dynamic import rather than a top-level
@@ -25,6 +26,20 @@ const GRAPH_CSS = `
 
 const capLabel =
   "font-mono text-[0.6875rem] font-medium tracking-[0.14em] text-muted-foreground";
+
+/* Saves the graph as Graphviz drew it: GRAPH_CSS lives in the page, so the
+   file keeps black strokes and labels, readable on any background. */
+function downloadSvg(svg: SVGSVGElement) {
+  const blob = new Blob([new XMLSerializer().serializeToString(svg)], {
+    type: "image/svg+xml",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "automaton.svg";
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 /** Renders Graphviz DOT source as an inline SVG automaton diagram. */
 export const DotGraph = ({ dot }: { dot: string }) => {
@@ -69,18 +84,32 @@ export const DotGraph = ({ dot }: { dot: string }) => {
   }, [dot]);
 
   /* Two flex items, not one wrapper: the readout in Demo is a wrapping flex
-     row, so the status/toggle sits on the AUTOMATON label row while the graph
+     row, so the status/buttons sit on the AUTOMATON label row while the graph
      (basis-full) wraps onto its own line underneath. */
   return (
     <>
       {status === "ready" ? (
-        <button
-          type="button"
-          onClick={() => setFit((f) => !f)}
-          className={`${capLabel} ml-auto hover:text-foreground transition-colors cursor-pointer`}
-        >
-          {fit ? "ACTUAL SIZE" : "FIT WIDTH"}
-        </button>
+        <span className="ml-auto flex gap-4">
+          <button
+            type="button"
+            onClick={() => {
+              const svg = hostRef.current?.querySelector("svg");
+              if (!svg) return;
+              downloadSvg(svg);
+              if (analyticsEnabled) posthog.capture("demo_automaton_downloaded");
+            }}
+            className={`${capLabel} hover:text-foreground transition-colors cursor-pointer`}
+          >
+            DOWNLOAD SVG
+          </button>
+          <button
+            type="button"
+            onClick={() => setFit((f) => !f)}
+            className={`${capLabel} hover:text-foreground transition-colors cursor-pointer`}
+          >
+            {fit ? "ACTUAL SIZE" : "FIT WIDTH"}
+          </button>
+        </span>
       ) : (
         <span className={`${capLabel} ml-auto`}>
           {status === "loading" ? "LAYING OUT…" : "LAYOUT FAILED"}

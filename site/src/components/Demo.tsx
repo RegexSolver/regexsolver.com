@@ -972,7 +972,11 @@ export const Demo = ({ syncUrl = false }: { syncUrl?: boolean }) => {
                     });
                 }}
                 className={`${capLabel} hover:text-foreground transition-colors cursor-pointer`}
-                title="Copy to clipboard"
+                title={
+                  result.type === "dot"
+                    ? "Copy the automaton as Graphviz DOT"
+                    : "Copy to clipboard"
+                }
               >
                 {copied ? "COPIED" : "COPY"}
               </button>
