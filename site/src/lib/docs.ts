@@ -8,3 +8,7 @@ const BASE = `${DOCS_URL}/latest/regexsolver/`;
 
 /** A docs.rs page of the crate, e.g. docs("enum.Term.html#method.union"). */
 export const docs = (path = "") => `${BASE}${path}`;
+
+/** The crate's docs.rs home at one version, e.g. docsAt("1.3.1"). */
+export const docsAt = (version: string) =>
+  `${DOCS_URL}/${version}/regexsolver/`;

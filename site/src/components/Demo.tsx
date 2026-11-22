@@ -21,6 +21,9 @@ import {
   preloadEngine,
 } from "../lib/engine";
 import { MODELS, findModel, megabytes } from "../lib/models";
+import { REGEXSOLVER_VERSION } from "../lib/engineVersion";
+import { docsAt } from "../lib/docs";
+import { Link } from "./ui/Link";
 
 /* Each operation carries a one-line description and a worked example. The
    example only prefills the initial state and ?op= deep links without inputs:
@@ -1049,23 +1052,34 @@ export const Demo = ({ syncUrl = false }: { syncUrl?: boolean }) => {
         </div>
       </form>
 
-      <details className="group">
-        <summary
-          className={`${capLabel} cursor-pointer list-none hover:text-foreground transition-colors`}
+      {/* The version sits on the summary's row, outside <summary> so a click
+          on it follows the link instead of toggling the code. */}
+      <div className="relative">
+        <details className="group">
+          <summary
+            className={`${capLabel} cursor-pointer list-none hover:text-foreground transition-colors`}
+          >
+            <span className="inline-block transition-transform group-open:rotate-90">
+              ›
+            </span>{" "}
+            THE SAME CALL IN RUST
+          </summary>
+          <div className="mt-3">
+            <CustomCodeTabs
+              tabs={rustTab(
+                generateFullSnippet({ operationId: operation }, examplePayload),
+              )}
+            />
+          </div>
+        </details>
+        <Link
+          to={docsAt(REGEXSOLVER_VERSION)}
+          title="The regexsolver version this demo runs"
+          className={`${capLabel} absolute top-0 right-0 hover:text-foreground transition-colors`}
         >
-          <span className="inline-block transition-transform group-open:rotate-90">
-            ›
-          </span>{" "}
-          THE SAME CALL IN RUST
-        </summary>
-        <div className="mt-3">
-          <CustomCodeTabs
-            tabs={rustTab(
-              generateFullSnippet({ operationId: operation }, examplePayload),
-            )}
-          />
-        </div>
-      </details>
+          REGEXSOLVER {REGEXSOLVER_VERSION}
+        </Link>
+      </div>
     </div>
   );
 };
