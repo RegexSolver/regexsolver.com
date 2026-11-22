@@ -52,6 +52,8 @@ const GROUPS = [
   "Convert",
 ] as const;
 type Group = (typeof GROUPS)[number];
+// The groups whose operations return a term, shown in `format`.
+const TERM_GROUPS: Group[] = ["Combine", "Build", "Convert"];
 
 type Op = {
   value: string;
@@ -86,13 +88,13 @@ const OPS: Op[] = [
     hint: "Counts how many distinct strings the pattern matches: a number, or \u221e.",
   },
   {
-    value: "dot",
-    label: "Automaton graph",
+    value: "convert",
+    label: "Convert pattern",
     group: "Convert",
     args: 1,
     input1Label: "Pattern",
-    example: { regex1: "(abc|de)+" },
-    hint: "Draws the automaton behind the pattern: circles are states, double circles accept, edges are the characters read.",
+    example: { regex1: "(ab|ac)*a(b|c)" },
+    hint: "Converts the pattern to its minimal automaton, then shows it as RESULT AS picks: the automaton, or a pattern built back from it.",
   },
   {
     value: "equivalent",
@@ -340,8 +342,7 @@ export const Demo = ({ syncUrl = false }: { syncUrl?: boolean }) => {
     () => OPS.find((o) => o.value === operation)!,
     [operation],
   );
-  // Combine and Build operations return a term, shown in `format`.
-  const returnsTerm = activeOp.group === "Combine" || activeOp.group === "Build";
+  const returnsTerm = TERM_GROUPS.includes(activeOp.group);
   const model = returnsTerm ? findModel(format) : undefined;
 
   useEffect(() => {
@@ -353,7 +354,12 @@ export const Demo = ({ syncUrl = false }: { syncUrl?: boolean }) => {
   // mount (static export, so query params are only available client-side)…
   useEffect(() => {
     const params = new URLSearchParams(syncUrl ? window.location.search : "");
-    const op = OPS.find((o) => o.value === params.get("op"));
+    // ?op=dot is the former "Automaton graph": Convert pattern, as an
+    // automaton.
+    const legacyDot = params.get("op") === "dot";
+    const op = OPS.find(
+      (o) => o.value === (legacyDot ? "convert" : params.get("op")),
+    );
     if (op) {
       const int = (key: string, fallback: number) => {
         const n = parseInt(params.get(key) ?? "", 10);
@@ -387,7 +393,9 @@ export const Demo = ({ syncUrl = false }: { syncUrl?: boolean }) => {
           op.example.characterOrder ?? "ascending",
         ),
       );
-      setFormat(enumParam("format", FORMATS, DEFAULT_FORMAT));
+      setFormat(
+        legacyDot ? "automaton" : enumParam("format", FORMATS, DEFAULT_FORMAT),
+      );
     }
     setUrlLoaded(true);
     // The engine loads while the visitor reads the form.

@@ -132,8 +132,9 @@ fn execute(request: &Request) -> Result<Response, Failure> {
         }
         "equivalent" => response("boolean", a.equivalent(&b()?)?.to_string()),
         "subset" => response("boolean", a.subset(&b()?)?.to_string()),
-        // Raw Graphviz source; the page lays it out.
-        "dot" => response("dot", a.to_automaton()?.to_dot()),
+        // The pattern's minimal automaton: as a term, a pattern converts as
+        // is, without state elimination or a model.
+        "convert" => term(a.minimize()?, request)?,
         "concat" => term(a.concat([&b()?])?, request)?,
         "union" => term(a.union([&b()?])?, request)?,
         "intersection" => term(a.intersection([&b()?])?, request)?,

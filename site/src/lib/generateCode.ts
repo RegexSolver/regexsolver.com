@@ -77,7 +77,6 @@ const parts = (operation: SnippetOperation, example: SnippetExample) => {
     length: "a.length()",
     equivalent: "a.equivalent(&b)?",
     subset: "a.subset(&b)?",
-    dot: "a.to_automaton()?.to_dot()",
     concat: "a.concat([&b])?",
     union: "a.union([&b])?",
     intersection: "a.intersection([&b])?",
@@ -101,6 +100,18 @@ export function generateFullSnippet(
   const id = operation.operationId;
   const { declarations, expression } = parts(operation, example);
   const imports = ["use regexsolver::Term;"];
+  // The model `format` names, loaded from the Hub.
+  const synthesizer = () => {
+    imports.push(
+      "use regexsolver::neural_synthesis::{Device, NeuralSynthesizer};",
+    );
+    return [
+      "let synthesizer = NeuralSynthesizer::from_hub(",
+      `    "alexvbrdn/${example.format}",`,
+      "    Device::best_available(),",
+      ")?;",
+    ];
+  };
   let body: string[];
   if (COMPUTE.has(id) && example.format === "automaton") {
     body = [
@@ -108,16 +119,10 @@ export function generateFullSnippet(
       `println!("{}", result.minimize()?.to_automaton()?.to_dot());`,
     ];
   } else if (COMPUTE.has(id) && example.format !== "state_elimination") {
-    imports.push(
-      "use regexsolver::neural_synthesis::{Device, NeuralSynthesizer};",
-    );
     body = [
       `let result = ${expression};`,
       "",
-      "let synthesizer = NeuralSynthesizer::from_hub(",
-      `    "alexvbrdn/${example.format}",`,
-      "    Device::best_available(),",
-      ")?;",
+      ...synthesizer(),
       `println!("{}", result.to_pattern_with(&synthesizer)?);`,
     ];
   } else if (COMPUTE.has(id)) {
@@ -133,8 +138,15 @@ export function generateFullSnippet(
         : "use regexsolver::fast_automaton::PathOrder;",
     );
     body = [`println!("{:?}", ${expression});`];
-  } else if (id === "dot") {
-    body = [`println!("{}", ${expression});`];
+  } else if (id === "convert" && example.format === "automaton") {
+    body = [`println!("{}", a.minimize()?.to_automaton()?.to_dot());`];
+  } else if (id === "convert" && example.format !== "state_elimination") {
+    body = [
+      ...synthesizer(),
+      `println!("{}", a.minimize()?.to_pattern_with(&synthesizer)?);`,
+    ];
+  } else if (id === "convert") {
+    body = [`println!("{}", a.minimize()?.to_pattern()?);`];
   } else {
     body = [`println!("{:?}", ${expression});`];
   }
