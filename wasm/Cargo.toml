@@ -12,7 +12,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 # No `parallel`: `wasm32-unknown-unknown` has no threads. `neural-synthesis`
 # turns the automata that compute operations return into short regexes.
-regexsolver = { version = "1.3.0", default-features = false, features = ["neural-synthesis"] }
+regexsolver = { version = "1.3.1", default-features = false, features = ["neural-synthesis"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 # Pinned to the CLI that generates the bindings: the two must match exactly
