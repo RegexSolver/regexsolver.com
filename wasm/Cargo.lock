@@ -1146,9 +1146,9 @@ checksum = "d902046e6a28a1e4c3cab97258a0ce11e994903f01c2d97a9447a0b3df85f4f6"
 
 [[package]]
 name = "regexsolver"
-version = "1.3.0"
+version = "1.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0f16f790ee5574f1cbd33755833e7d5434b4848fc612d39a02db3b9bb6dc768"
+checksum = "535d188da29f89fccde39fe238cdc7dd53d083b20967dcbe406c608815dfdbfa"
 dependencies = [
  "ahash",
  "bit-set 0.11.1",
