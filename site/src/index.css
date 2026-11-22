@@ -1,10 +1,10 @@
-/* Fonts are loaded via <link> tags in app/layout.tsx — an external
+/* Fonts come from app/fonts.css, imported by app/layout.tsx — an external
    @import url(...) here gets silently dropped by Next/Turbopack. */
 @import "tailwindcss";
-/* web-shared ships React components (footer content, cookie banner) whose
-   Tailwind classes live outside this app's sources. v4 auto-detection skips
+/* web-shared ships a React component (Logo) whose Tailwind classes live
+   outside this app's sources. v4 auto-detection skips
    node_modules, so the package must be declared as a source explicitly —
-   drop this and those components silently lose their styling. */
+   drop this and it silently loses its styling. */
 @source "../node_modules/@regexsolver/web-shared/src";
 @custom-variant dark (&:where(.dark, .dark *));
 

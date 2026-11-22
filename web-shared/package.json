@@ -2,18 +2,15 @@
   "name": "@regexsolver/web-shared",
   "version": "0.0.0",
   "private": true,
-  "description": "Frontend logic and components for the site: the consent cookie, PostHog init, cookie banner, site links, logo. Ships raw TypeScript — the site bundles it (moduleResolution: bundler).",
+  "description": "Frontend logic and components for the site: PostHog init, site links, logo, brand assets and fonts. Ships raw TypeScript — the site bundles it (moduleResolution: bundler).",
   "type": "module",
   "exports": {
     "./analytics": "./src/analytics.ts",
     "./brand": "./src/brand.ts",
-    "./consent": "./src/consent.ts",
-    "./cookie-banner": "./src/cookie-banner.ts",
     "./site-links": "./src/site-links.ts",
     "./fonts/preload": "./fonts/preload.ts",
     "./fonts/fonts.css": "./fonts/fonts.css",
-    "./components/Logo": "./src/components/Logo.tsx",
-    "./components/CookieBanner": "./src/components/CookieBanner.tsx"
+    "./components/Logo": "./src/components/Logo.tsx"
   },
   "peerDependencies": {
     "react": ">=19.0.0"

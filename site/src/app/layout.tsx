@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/ui/ThemeContext";
-import { CookieBanner } from "@/components/CookieBanner";
 import { IS_PROD_SITE, OG_IMAGE, SITE_URL, og } from "@/lib/seo";
 import ReactDOM from "react-dom";
 import { FONT_PRELOAD } from "@regexsolver/web-shared/fonts/preload";
@@ -119,7 +118,6 @@ export default function RootLayout({
       <body className="antialiased">
           <ThemeProvider>
             {children}
-            <CookieBanner />
           </ThemeProvider>
       </body>
     </html>

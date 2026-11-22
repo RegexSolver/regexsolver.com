@@ -1,5 +1,3 @@
-import { type Consent, getStoredConsent } from "./consent";
-
 /**
  * Minimal structural slice of the PostHog client we use — posthog-js' default
  * export satisfies it. Declared here instead of importing posthog-js so this
@@ -9,7 +7,6 @@ import { type Consent, getStoredConsent } from "./consent";
  */
 export interface AnalyticsClient {
   init(token: string, config: object): unknown;
-  set_config(config: object): void;
   register(properties: object): void;
   capture(event: string, properties?: object): void;
 }
@@ -27,11 +24,9 @@ export interface AnalyticsOptions {
   debug?: boolean;
 }
 
-let client: AnalyticsClient | null = null;
-
 /**
  * Derives the deployment environment from the hostname so every event can be
- * split by dev vs prod in the shared PostHog project:
+ * split by dev vs prod in the PostHog project:
  *   regexsolver.com                          → "prod"
  *   dev.regexsolver.com (+ its subdomains)   → "dev"
  *   localhost / 127.0.0.1 / *.local          → "local"
@@ -49,9 +44,12 @@ const detectEnvironment = (hostname: string): string => {
 };
 
 /**
- * Initializes PostHog.
- * Returns whether analytics is active (false outside the browser — e.g. during
- * SSR/prerendering — without a token, or on a local hostname).
+ * Initializes PostHog, cookieless and anonymous: nothing is stored on the
+ * visitor's device and no person profile is created, so there is no consent
+ * to ask for. The site's privacy policy (site/src/views/Privacy.tsx) says so;
+ * keep the two in step. Returns whether analytics is active (false outside
+ * the browser — e.g. during prerendering — without a token, or on a local
+ * hostname).
  */
 export const initAnalytics = (
   posthog: AnalyticsClient,
@@ -59,10 +57,9 @@ export const initAnalytics = (
 ): boolean => {
   if (typeof window === "undefined" || !token) return false;
 
-  // Local dev never initializes PostHog — no local noise in the shared project,
-  // even when a .env carries a real token. Hostname-based (not NODE_ENV) so a
-  // prod build served on localhost stays silent too; dev.regexsolver.com still
-  // captures, labeled environment=dev.
+  // Local dev never initializes PostHog — no local noise in the project, even
+  // when a .env carries a real token. Hostname-based (not NODE_ENV) so a prod
+  // build served on localhost stays silent too.
   const environment = detectEnvironment(window.location.hostname);
   if (environment === "local") return false;
 
@@ -70,16 +67,15 @@ export const initAnalytics = (
     api_host: apiHost,
     ui_host: "https://eu.posthog.com",
     defaults: "2026-01-30",
-    capture_exceptions: true,
-    disable_session_recording: true, // ad-blockers block posthog-recorder.js by name even first-party
-    capture_dead_clicks: false, // ad-blockers block dead-clicks-autocapture.js by name even first-party
+    // Error reports could carry what a visitor typed.
+    capture_exceptions: false,
+    disable_session_recording: true,
+    capture_dead_clicks: false,
     debug,
-    // Default to cookieless, anonymous capture: no device storage (ePrivacy-exempt),
-    // no persistent person profiles → runs on legitimate interest before/without consent.
+    // No cookies, localStorage or sessionStorage: identifiers live in memory
+    // and end with the page.
     persistence: "memory",
     person_profiles: "identified_only",
-    // Share the identified user's cookie across all subdomains (once they accept).
-    cross_subdomain_cookie: true,
   });
 
   // Tag every event with its originating app and deployment environment (dev
@@ -89,25 +85,5 @@ export const initAnalytics = (
   if (source) superProps.app = source;
   posthog.register(superProps);
 
-  // Returning visitors who accepted get the full experience: persistent cookies +
-  // cross-session identification. No re-prompt needed.
-  if (getStoredConsent() === "accepted") {
-    posthog.set_config({ persistence: "localStorage+cookie" });
-  }
-
-  client = posthog;
   return true;
-};
-
-/**
- * Applies a (new) consent decision: accept upgrades to persistent cookies +
- * cross-session identification; decline stays on the default cookieless,
- * anonymous (legitimate-interest) capture. No-op when analytics is disabled.
- */
-export const applyConsentToAnalytics = (consent: Consent) => {
-  if (!client) return;
-  client.set_config({
-    persistence: consent === "accepted" ? "localStorage+cookie" : "memory",
-  });
-  client.capture("cookie_consent_decided", { consent });
 };
