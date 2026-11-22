@@ -34,11 +34,21 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(theme);
-    localStorage.setItem("theme", theme);
   }, [theme, mounted]);
 
+  // Only a choice the visitor makes is saved: without one, the theme follows
+  // the OS preference.
+  const choose = React.useCallback((next: Theme) => {
+    setTheme(next);
+    try {
+      localStorage.setItem("theme", next);
+    } catch {
+      // Storage blocked: the choice holds for this page only.
+    }
+  }, []);
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme: choose }}>
       {children}
     </ThemeContext.Provider>
   );

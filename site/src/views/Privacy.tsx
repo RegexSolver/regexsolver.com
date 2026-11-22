@@ -54,9 +54,9 @@ const SECTIONS: Section[] = [
           on our legitimate interest in understanding how the site is used.
         </p>
         <p>
-          <strong>Your browser keeps your settings.</strong> Your light or dark
-          theme, the code tab you picked and the models you download in the
-          demo stay in your browser&rsquo;s storage, on your device. Clear them
+          <strong>Your browser keeps your settings.</strong> The light or dark
+          theme and the code tab you pick, and the models you download in the
+          demo, stay in your browser&rsquo;s storage, on your device. Clear them
           from your browser&rsquo;s settings.
         </p>
       </>
