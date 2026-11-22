@@ -94,7 +94,7 @@ const OPS: Op[] = [
     args: 1,
     input1Label: "Pattern",
     example: { regex1: "(ab|ac)*a(b|c)" },
-    hint: "Converts the pattern to its minimal automaton, then shows it as RESULT AS picks: the automaton, or a pattern built back from it.",
+    hint: "Converts the pattern to its minimal automaton.",
   },
   {
     value: "equivalent",
